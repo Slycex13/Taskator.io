@@ -1,27 +1,86 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import type { Item } from "./types/Item";
+import type { Category } from "./types/category";
+import ColumnList from "./components/ColumnList";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+
+import type { DragEndEvent } from "@dnd-kit/core";
+import TaskItem from "./components/TaskItem";
 
 function App() {
-  type Item = { name: string; check: boolean };
+  const idItemCounter = useRef(0);
+  const idCategorieCounter = useRef(0);
 
-  const [input, setInput] = useState("");
+  const [draggingItem, setDraggingItem] = useState<Item | null>(null);
+  const [categoriesInput, setCategoriesInput] = useState("");
   const [list, setList] = useState<Item[]>([]);
-  const [filtered, setFiltered] = useState<"all" | "checked" | "unchecked">(
-    "all"
-  );
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
 
-  const listDisplayed = list.filter((item) => {
-    if (filtered === "checked") return item.check === true;
-    if (filtered === "unchecked") return item.check === false;
-    return true;
-  });
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+
+    // Sécurité : vérifier qu’on a bien un drop valide
+    if (!over) return;
+
+    const activeId = active.id.toString();
+    const overId = over.id.toString();
+
+    // Vérifie qu’on déplace bien une tâche vers une colonne
+    if (!activeId.startsWith("task-") || !overId.startsWith("column-")) return;
+
+    const taskId = parseInt(activeId.replace("task-", ""));
+    const targetCategoryId = parseInt(overId.replace("column-", ""));
+
+    setList((prev) =>
+      prev.map((item) =>
+        item.id === taskId ? { ...item, categoryId: targetCategoryId } : item
+      )
+    );
+  }
+
+  function onDelete(id: number) {
+    setList(list.filter((item) => item.id !== id));
+  }
+
+  function onToggle(id: number) {
+    setList(
+      list.map((item) =>
+        item.id === id ? { ...item, check: !item.check } : item
+      )
+    );
+  }
+
+  function onAdd(name: string, categoryId: number) {
+    idItemCounter.current++;
+    setList([
+      ...list,
+      {
+        id: idItemCounter.current,
+        name: name,
+        check: false,
+        categoryId: categoryId,
+      },
+    ]);
+  }
+
+  function onDeleteCategory(id: number) {
+    setCategories(categories.filter((cat) => cat.id !== id));
+    setList(list.filter((item) => item.categoryId !== id));
+  }
 
   useEffect(() => {
-    const data = localStorage.getItem("mylist");
-    if (data) {
-      setList(JSON.parse(data) as Item[]);
+    const storedItems = localStorage.getItem("items");
+    const storedCategories = localStorage.getItem("categories");
+
+    if (storedItems) {
+      setList(JSON.parse(storedItems) as Item[]);
+    }
+
+    if (storedCategories) {
+      setCategories(JSON.parse(storedCategories) as Category[]);
     }
   }, []);
 
@@ -30,13 +89,14 @@ function App() {
       setIsInitialLoad(false);
       return;
     }
-    localStorage.setItem("mylist", JSON.stringify(list));
-  }, [list]);
+    localStorage.setItem("items", JSON.stringify(list));
+    localStorage.setItem("categories", JSON.stringify(categories));
+  }, [list, categories]);
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
       <header className="bg-white shadow-md py-6 text-center">
-        <h1 className="text-4xl font-bold text-amber-600">📝 Ma Liste</h1>
+        <h1 className="text-4xl font-bold text-amber-600">📝 TASKATOR.IO</h1>
       </header>
 
       <div className="flex justify-end px-6 mt-6">
@@ -47,29 +107,6 @@ function App() {
           >
             Filtrer
           </button>
-
-          {showMenu && (
-            <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg p-2 flex flex-col animate-fade-in z-10">
-              <button
-                onClick={() => setFiltered("checked")}
-                className="text-left hover:bg-gray-100 px-3 py-2 rounded"
-              >
-                ✔️ Fait
-              </button>
-              <button
-                onClick={() => setFiltered("unchecked")}
-                className="text-left hover:bg-gray-100 px-3 py-2 rounded"
-              >
-                🕐 À faire
-              </button>
-              <button
-                onClick={() => setFiltered("all")}
-                className="text-left hover:bg-gray-100 px-3 py-2 rounded"
-              >
-                📋 Tous
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
@@ -77,16 +114,21 @@ function App() {
         <div className="flex gap-4">
           <input
             type="text"
-            placeholder="Nouvel élément..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            placeholder="Nouvelle catégorie..."
+            value={categoriesInput}
+            onChange={(e) => setCategoriesInput(e.target.value)}
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
           <button
             onClick={() => {
-              if (input.trim() === "") return;
-              setList([...list, { name: input, check: false }]);
-              setInput("");
+              if (categoriesInput.trim() === "") return;
+              idCategorieCounter.current++;
+              setCategories([
+                ...categories,
+                { id: idCategorieCounter.current, name: categoriesInput },
+              ]);
+              setCategoriesInput("");
+              console.log(categories);
             }}
             className="bg-green-500 hover:bg-green-600 transition-all text-white px-6 py-2 rounded-lg shadow"
           >
@@ -94,50 +136,34 @@ function App() {
           </button>
         </div>
       </div>
-
-      <ul className="max-w-2xl mx-auto mt-10 px-6 flex flex-col gap-4">
-        {listDisplayed.map((item, index) => (
-          <li
-            key={index}
-            className="bg-white shadow rounded-xl p-4 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-          >
-            <p
-              className={`text-lg break-words w-full ${
-                item.check ? "line-through text-gray-400" : "text-gray-800"
-              }`}
-            >
-              {item.name}
-            </p>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
-              <button
-                onClick={() => {
-                  const newList = [...list];
-                  newList[index].check = !newList[index].check;
-                  setList(newList);
-                }}
-                className={`px-4 py-2  rounded-lg text-white transition-all whitespace-nowrap
-                    ${
-                      item.check
-                        ? "bg-blue-500 hover:bg-blue-600"
-                        : "bg-green-500 hover:bg-green-600"
-                    }`}
-              >
-                {item.check ? "À faire" : "Fait"}
-              </button>
-              <button
-                onClick={() => {
-                  const newList = [...list];
-                  newList.splice(index, 1);
-                  setList(newList);
-                }}
-                className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all"
-              >
-                Supprimer
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <DndContext
+        onDragStart={({ active }) => {
+          const id = parseInt(active.id.toString().replace("task-", ""));
+          const found = list.find((item) => item.id === id);
+          if (found) setDraggingItem(found);
+        }}
+        onDragEnd={handleDragEnd}
+        onDragCancel={() => setDraggingItem(null)}
+      >
+        <ColumnList
+          items={list}
+          onAdd={onAdd}
+          onDelete={onDelete}
+          onToggle={onToggle}
+          onDeleteCategory={onDeleteCategory}
+          categories={categories}
+        />
+        <DragOverlay>
+          {draggingItem ? (
+            <TaskItem
+              item={draggingItem}
+              onToggle={() => {}}
+              onDelete={() => {}}
+              className="animate-pulse-scale"
+            />
+          ) : null}
+        </DragOverlay>
+      </DndContext>
     </div>
   );
 }

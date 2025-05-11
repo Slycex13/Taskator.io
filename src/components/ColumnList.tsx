@@ -9,6 +9,7 @@ type ColumnListProps = {
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onDeleteCategory: (id: number) => void;
+  draggingItem: Item | null;
 };
 
 function ColumnList({
@@ -18,6 +19,7 @@ function ColumnList({
   onToggle,
   onDelete,
   onDeleteCategory,
+  draggingItem,
 }: ColumnListProps) {
   return (
     <div className="sm:flex gap-4 p-4 overflow-x-auto w-full justify-between">
@@ -30,6 +32,7 @@ function ColumnList({
           onToggle={onToggle}
           onDelete={onDelete}
           onDeleteCategory={onDeleteCategory}
+          draggingItem={draggingItem}
         />
       ))}
     </div>

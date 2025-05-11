@@ -14,15 +14,6 @@ function TaskItem({ item, onToggle, onDelete, className }: TaskItemProps) {
   });
   return (
     <li
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        transform: transform
-          ? `translate(${transform.x}px, ${transform.y}px)`
-          : undefined,
-        zIndex: transform ? 50 : "auto",
-      }}
       className={`bg-white shadow rounded-xl p-4 animate-fade-in flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4  ${
         className ?? ""
       }`}
@@ -56,6 +47,20 @@ function TaskItem({ item, onToggle, onDelete, className }: TaskItemProps) {
         >
           Supprimer
         </button>
+      </div>
+      <div
+        ref={setNodeRef}
+        {...listeners}
+        {...attributes}
+        style={{
+          transform: transform
+            ? `translate(${transform.x}px, ${transform.y}px)`
+            : undefined,
+          zIndex: transform ? 50 : "auto",
+        }}
+        className="cursor-grab text-xl hover:scale-120 "
+      >
+        ⠿
       </div>
     </li>
   );

@@ -11,6 +11,7 @@ type ColumnItemProps = {
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
   onDeleteCategory: (id: number) => void;
+  draggingItem: Item | null;
 };
 
 function ColumnItem({
@@ -20,6 +21,7 @@ function ColumnItem({
   onToggle,
   onDelete,
   onDeleteCategory,
+  draggingItem,
 }: ColumnItemProps) {
   const [input, setInput] = useState("");
 
@@ -67,7 +69,12 @@ function ColumnItem({
         </div>
       </div>
       <div ref={setNodeRef} className="flex-1  px-6">
-        <TaskList items={items} onToggle={onToggle} onDelete={onDelete} />
+        <TaskList
+          items={items}
+          onToggle={onToggle}
+          onDelete={onDelete}
+          draggingItem={draggingItem}
+        />
       </div>
     </div>
   );

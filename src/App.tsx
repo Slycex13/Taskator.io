@@ -39,6 +39,8 @@ function App() {
         item.id === taskId ? { ...item, categoryId: targetCategoryId } : item
       )
     );
+
+    setDraggingItem(null);
   }
 
   function onDelete(id: number) {
@@ -95,8 +97,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
-      <header className="bg-white shadow-md py-6 text-center">
-        <h1 className="text-4xl font-bold text-amber-600">📝 TASKATOR.IO</h1>
+      <header className="bg-white shadow-md py-6 text-center h-24 ">
+        <h1 className="text-4xl font-bold text-amber-600 ">📝 TASKATOR.IO</h1>
       </header>
 
       <div className="flex justify-end px-6 mt-6">
@@ -152,6 +154,7 @@ function App() {
           onToggle={onToggle}
           onDeleteCategory={onDeleteCategory}
           categories={categories}
+          draggingItem={draggingItem}
         />
         <DragOverlay>
           {draggingItem ? (
@@ -159,11 +162,16 @@ function App() {
               item={draggingItem}
               onToggle={() => {}}
               onDelete={() => {}}
-              className="animate-pulse-scale"
+              className="min-w-fit bg-white rounded-xl p-4 shadow-xl pointer-events-none"
             />
           ) : null}
         </DragOverlay>
       </DndContext>
+      <footer className="absolute w-screen bottom-0 bg-white shadow-md text-center p-4 h-24 ">
+        <h1 className="text-sm font-bold text-black">
+          Made with ❤ at Marseille
+        </h1>
+      </footer>
     </div>
   );
 }

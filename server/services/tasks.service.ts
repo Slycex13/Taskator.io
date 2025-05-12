@@ -73,3 +73,18 @@ export async function updateTaskCategory(id: number, categoryId: number) {
     );
   });
 }
+
+export async function updateTaskName(id: number, name: string) {
+  return new Promise((resolve, reject) => {
+    db.query(
+      "UPDATE tasks SET name = ? WHERE id = ?",
+      [name, id],
+      (err, rows) => {
+        if (err) reject(err);
+        else {
+          resolve(rows);
+        }
+      }
+    );
+  });
+}

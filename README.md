@@ -81,7 +81,7 @@ Taskator.io est une application Trello-like pour organiser vos tâches par colon
 ### 1. Cloner le projet
 
 ```bash
-git clone https://github.com/ton-pseudo/taskator.io.git
+git clone https://github.com/Slycex13/taskator.io.git
 cd taskator.io
 ```
 

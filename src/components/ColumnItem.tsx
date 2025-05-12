@@ -10,6 +10,7 @@ type ColumnItemProps = {
   onAdd: (name: string, categoryId: number) => void;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
+  onEdit: (name: string, id: number) => void;
   onDeleteCategory: (id: number) => void;
   draggingItem: Item | null;
 };
@@ -20,6 +21,7 @@ function ColumnItem({
   onAdd,
   onToggle,
   onDelete,
+  onEdit,
   onDeleteCategory,
   draggingItem,
 }: ColumnItemProps) {
@@ -73,6 +75,7 @@ function ColumnItem({
           items={items}
           onToggle={onToggle}
           onDelete={onDelete}
+          onEdit={onEdit}
           draggingItem={draggingItem}
         />
       </div>

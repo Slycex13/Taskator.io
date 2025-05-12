@@ -5,7 +5,6 @@ import type { Category } from "./types/category";
 import ColumnList from "./components/ColumnList";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
 import type { DragEndEvent } from "@dnd-kit/core";
-import TaskItem from "./components/TaskItem";
 
 function App() {
   const [draggingItem, setDraggingItem] = useState<Item | null>(null);
@@ -47,6 +46,14 @@ function App() {
   function onDeleteTask(id: number) {
     fetch(`http://localhost:3000/tasks/${id}`, {
       method: "DELETE",
+    }).then(() => reload());
+  }
+
+  function onEditTask(name: string, id: number) {
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: name }),
     }).then(() => reload());
   }
 
@@ -173,18 +180,17 @@ function App() {
           onAdd={onAddTask}
           onDelete={onDeleteTask}
           onToggle={onCheckTask}
+          onEdit={onEditTask}
           onDeleteCategory={onDeleteCategory}
           categories={categories}
           draggingItem={draggingItem}
         />
         <DragOverlay>
           {draggingItem ? (
-            <TaskItem
-              item={draggingItem}
-              onToggle={() => {}}
-              onDelete={() => {}}
-              className="min-w-fit bg-white rounded-xl p-4 shadow-xl pointer-events-none"
-            />
+            <div className="flex justify-center items-center min-w-72 min-h-18 bg-white rounded-xl p-4 shadow-xl pointer-events-none">
+              <div className="absolute left-0 text-2xl p-4">⠿</div>
+              <h2 className="ml-10 text-lg">{draggingItem.name}</h2>
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>

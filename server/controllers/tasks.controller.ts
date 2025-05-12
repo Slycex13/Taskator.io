@@ -4,6 +4,7 @@ import {
   updateTaskChecked,
   deleteTask,
   updateTaskCategory,
+  updateTaskName,
 } from "../services/tasks.service";
 import { Request, Response } from "express";
 
@@ -26,13 +27,16 @@ export async function deleteTaskHandler(req: Request, res: Response) {
 
 export async function updateTaskHandler(req: Request, res: Response) {
   const id = parseInt(req.params.id);
-  const { checked, categoryId } = req.body;
+  const { checked, categoryId, name } = req.body;
 
   if (typeof checked !== "undefined") {
     await updateTaskChecked(id, checked);
   }
   if (typeof categoryId !== "undefined") {
     await updateTaskCategory(id, categoryId);
+  }
+  if (typeof name !== "undefined") {
+    await updateTaskName(id, name);
   }
   res.json({ message: `task ${id} updated` });
 }

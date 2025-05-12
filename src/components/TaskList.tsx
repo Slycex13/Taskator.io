@@ -5,10 +5,17 @@ type TaskListProps = {
   items: Item[];
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
+  onEdit: (name: string, id: number) => void;
   draggingItem: Item | null;
 };
 
-function TaskList({ items, onToggle, onDelete, draggingItem }: TaskListProps) {
+function TaskList({
+  items,
+  onToggle,
+  onDelete,
+  onEdit,
+  draggingItem,
+}: TaskListProps) {
   return (
     <ul className=" mb-4  flex flex-col gap-4">
       {Array.isArray(items) &&
@@ -17,6 +24,7 @@ function TaskList({ items, onToggle, onDelete, draggingItem }: TaskListProps) {
             <TaskItem
               key={item.id}
               item={item}
+              onEdit={onEdit}
               onToggle={onToggle}
               onDelete={onDelete}
             />

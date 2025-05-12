@@ -8,6 +8,7 @@ type ColumnListProps = {
   onAdd: (name: string, categoryId: number) => void;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
+  onEdit: (name: string, id: number) => void;
   onDeleteCategory: (id: number) => void;
   draggingItem: Item | null;
 };
@@ -18,6 +19,7 @@ function ColumnList({
   onAdd,
   onToggle,
   onDelete,
+  onEdit,
   onDeleteCategory,
   draggingItem,
 }: ColumnListProps) {
@@ -32,6 +34,7 @@ function ColumnList({
             onAdd={onAdd}
             onToggle={onToggle}
             onDelete={onDelete}
+            onEdit={onEdit}
             onDeleteCategory={onDeleteCategory}
             draggingItem={draggingItem}
           />

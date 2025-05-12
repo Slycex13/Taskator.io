@@ -7,8 +7,6 @@
 
 Taskator.io est une application Trello-like pour organiser vos tâches par colonnes. Interface fluide, animations modernes, persistance via une API REST et base MySQL. 🧩
 
-🔗 **Démo live :** [taskator.vercel.app](https://taskator.vercel.app) _(exemple, à remplacer par ton vrai lien)_
-
 ---
 
 ## 🚀 Fonctionnalités

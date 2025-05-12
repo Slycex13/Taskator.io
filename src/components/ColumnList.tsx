@@ -23,18 +23,19 @@ function ColumnList({
 }: ColumnListProps) {
   return (
     <div className="sm:flex gap-4 p-4 overflow-x-auto w-full justify-between">
-      {categories.map((category) => (
-        <ColumnItem
-          key={category.id}
-          category={category}
-          items={items.filter((item) => item.categoryId === category.id)}
-          onAdd={onAdd}
-          onToggle={onToggle}
-          onDelete={onDelete}
-          onDeleteCategory={onDeleteCategory}
-          draggingItem={draggingItem}
-        />
-      ))}
+      {Array.isArray(categories) &&
+        categories.map((category) => (
+          <ColumnItem
+            key={category.id}
+            category={category}
+            items={items.filter((item) => item.categoryId === category.id)}
+            onAdd={onAdd}
+            onToggle={onToggle}
+            onDelete={onDelete}
+            onDeleteCategory={onDeleteCategory}
+            draggingItem={draggingItem}
+          />
+        ))}
     </div>
   );
 }

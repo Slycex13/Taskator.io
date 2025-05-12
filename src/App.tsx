@@ -1,21 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import type { Item } from "./types/Item";
 import type { Category } from "./types/category";
 import ColumnList from "./components/ColumnList";
 import { DndContext, DragOverlay } from "@dnd-kit/core";
-
 import type { DragEndEvent } from "@dnd-kit/core";
 import TaskItem from "./components/TaskItem";
 
 function App() {
-  const idItemCounter = useRef(0);
-  const idCategorieCounter = useRef(0);
-
   const [draggingItem, setDraggingItem] = useState<Item | null>(null);
   const [categoriesInput, setCategoriesInput] = useState("");
   const [list, setList] = useState<Item[]>([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
 
@@ -34,6 +29,12 @@ function App() {
     const taskId = parseInt(activeId.replace("task-", ""));
     const targetCategoryId = parseInt(overId.replace("column-", ""));
 
+    fetch(`http://localhost:3000/tasks/${taskId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ categoryId: targetCategoryId }),
+    }).then(() => loadTask());
+
     setList((prev) =>
       prev.map((item) =>
         item.id === taskId ? { ...item, categoryId: targetCategoryId } : item
@@ -43,57 +44,81 @@ function App() {
     setDraggingItem(null);
   }
 
-  function onDelete(id: number) {
-    setList(list.filter((item) => item.id !== id));
+  function onDeleteTask(id: number) {
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "DELETE",
+    }).then(() => reload());
   }
 
-  function onToggle(id: number) {
-    setList(
-      list.map((item) =>
-        item.id === id ? { ...item, check: !item.check } : item
-      )
-    );
+  function onCheckTask(id: number) {
+    const item = list.find((i) => i.id === id);
+    if (!item) return;
+
+    const updatedChecked = !item.checked;
+
+    fetch(`http://localhost:3000/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ checked: updatedChecked }),
+    }).then(() => loadTask());
   }
 
-  function onAdd(name: string, categoryId: number) {
-    idItemCounter.current++;
-    setList([
-      ...list,
-      {
-        id: idItemCounter.current,
-        name: name,
-        check: false,
-        categoryId: categoryId,
-      },
-    ]);
+  function onAddCategory(name: string) {
+    fetch("http://localhost:3000/categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+      }),
+    }).then(() => reload());
+  }
+  function onAddTask(name: string, categoryId: number) {
+    fetch("http://localhost:3000/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        checked: false,
+        categoryId,
+      }),
+    }).then(() => reload());
+  }
+
+  function loadTask() {
+    fetch("http://localhost:3000/tasks")
+      .then((res) => res.json())
+
+      .then((data) => {
+        setList(data);
+      });
+  }
+
+  function reload() {
+    loadCategories();
+    loadTask();
+  }
+
+  function loadCategories() {
+    fetch("http://localhost:3000/categories")
+      .then((res) => res.json())
+
+      .then((data) => {
+        setCategories(data);
+      });
   }
 
   function onDeleteCategory(id: number) {
-    setCategories(categories.filter((cat) => cat.id !== id));
-    setList(list.filter((item) => item.categoryId !== id));
+    fetch(`http://localhost:3000/categories/${id}`, {
+      method: "DELETE",
+    }).then(() => {
+      loadCategories();
+      loadTask();
+    });
   }
 
   useEffect(() => {
-    const storedItems = localStorage.getItem("items");
-    const storedCategories = localStorage.getItem("categories");
-
-    if (storedItems) {
-      setList(JSON.parse(storedItems) as Item[]);
-    }
-
-    if (storedCategories) {
-      setCategories(JSON.parse(storedCategories) as Category[]);
-    }
+    reload();
   }, []);
-
-  useEffect(() => {
-    if (isInitialLoad) {
-      setIsInitialLoad(false);
-      return;
-    }
-    localStorage.setItem("items", JSON.stringify(list));
-    localStorage.setItem("categories", JSON.stringify(categories));
-  }, [list, categories]);
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 font-sans">
@@ -124,11 +149,7 @@ function App() {
           <button
             onClick={() => {
               if (categoriesInput.trim() === "") return;
-              idCategorieCounter.current++;
-              setCategories([
-                ...categories,
-                { id: idCategorieCounter.current, name: categoriesInput },
-              ]);
+              onAddCategory(categoriesInput);
               setCategoriesInput("");
               console.log(categories);
             }}
@@ -149,9 +170,9 @@ function App() {
       >
         <ColumnList
           items={list}
-          onAdd={onAdd}
-          onDelete={onDelete}
-          onToggle={onToggle}
+          onAdd={onAddTask}
+          onDelete={onDeleteTask}
+          onToggle={onCheckTask}
           onDeleteCategory={onDeleteCategory}
           categories={categories}
           draggingItem={draggingItem}
@@ -167,7 +188,7 @@ function App() {
           ) : null}
         </DragOverlay>
       </DndContext>
-      <footer className="absolute w-screen bottom-0 bg-white shadow-md text-center p-4 h-24 ">
+      <footer className="fixed w-screen bottom-0 bg-white shadow-md text-center p-4 h-24 ">
         <h1 className="text-sm font-bold text-black">
           Made with ❤ at Marseille
         </h1>

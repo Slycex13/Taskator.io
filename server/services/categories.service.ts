@@ -18,12 +18,13 @@ export async function postCategory(name: string) {
 
 export async function deleteCategory(id: number) {
   return new Promise((resolve, reject) => {
-    db.query("DELETE FROM categories WHERE id = ?", [id], (err, rows) => {
-      if (err) {
-        return reject(err);
-      } else {
-        return resolve(rows);
-      }
+    db.query("DELETE FROM tasks WHERE categoryId = ?", [id], (err) => {
+      if (err) return reject(err);
+
+      db.query("DELETE FROM categories WHERE id = ?", [id], (err2, rows2) => {
+        if (err2) return reject(err2);
+        return resolve(rows2);
+      });
     });
   });
 }

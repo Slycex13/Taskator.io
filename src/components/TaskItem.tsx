@@ -20,7 +20,7 @@ function TaskItem({ item, onToggle, onDelete, className }: TaskItemProps) {
     >
       <p
         className={`text-lg break-words w-full ${
-          item.check ? "line-through text-gray-400" : "text-gray-800"
+          item.checked ? "line-through text-gray-400" : "text-gray-800"
         }`}
       >
         {item.name}
@@ -28,16 +28,24 @@ function TaskItem({ item, onToggle, onDelete, className }: TaskItemProps) {
       <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
         <button
           onClick={() => {
+            onDelete(item.id);
+          }}
+          className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white transition-all"
+        >
+          Editer
+        </button>
+        <button
+          onClick={() => {
             onToggle(item.id);
           }}
           className={`px-4 py-2  rounded-lg text-white transition-all whitespace-nowrap
                     ${
-                      item.check
+                      item.checked
                         ? "bg-blue-500 hover:bg-blue-600"
                         : "bg-green-500 hover:bg-green-600"
                     }`}
         >
-          {item.check ? "À faire" : "Fait"}
+          {item.checked ? "À faire" : "Fait"}
         </button>
         <button
           onClick={() => {

@@ -7,8 +7,8 @@ import {
 import { Request, Response } from "express";
 
 export async function getCategoriesHandler(req: Request, res: Response) {
-  await getCategories();
-  res.json({ message: `categories getted` });
+  const categories = await getCategories();
+  res.json(categories);
 }
 
 export async function createCategoryHandler(req: Request, res: Response) {
